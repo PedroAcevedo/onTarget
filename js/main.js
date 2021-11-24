@@ -11,10 +11,16 @@ function render(textureImages) {
     // Get WebGL context
     /** @type {HTMLCanvasElement} */
     var canvas = document.querySelector("#canvas");
+    var angleElement = document.querySelector("#angle");
     var gl = canvas.getContext("webgl");
     if (!gl) {
         return;
     }
+
+    var angleNode = document.createTextNode("");
+
+    // Add those text nodes where they need to go
+    angleElement.appendChild(angleNode);
 
     // setup GLSL program
     var program = webglUtils.createProgramFromScripts(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
@@ -85,6 +91,11 @@ function render(textureImages) {
         textures.push(texture);
     }
 
+    function radToDeg(r) {
+        return r * 180 / Math.PI;
+    }
+
+
     function degToRad(d) {
         return d * Math.PI / 180;
     }
@@ -92,12 +103,12 @@ function render(textureImages) {
     function mouseMove(e) {
         let x = e.offsetX;
         let y = e.offsetY;
-        console.log("MOUSE MOVE");
 
         lastMouseDelta = [x - lastMousePosition[0],
         y - lastMousePosition[1]];
         lastMousePosition = [x, y];
-        cameraAngleRadians = degToRad(0.5 * (lastMousePosition[0]));
+
+        cameraAngleRadians = degToRad(360 - (0.5 * (lastMousePosition[0])) % 360);
         drawScene();
     };
 
@@ -110,8 +121,6 @@ function render(textureImages) {
         keys[e.keyCode] = true;
         if (keys['87'] || keys['83']) {
             const direction = keys['87'] ? 1 : -1;
-            px += cameraMovement[8] * speed * direction;
-            py += cameraMovement[9] * speed * direction;
             pz += cameraMovement[10] * speed * direction;
             drawScene();
         }
@@ -199,7 +208,7 @@ function render(textureImages) {
         projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, zNear, zFar);
 
         // Compute a matrix for the camera
-        cameraMatrix = m4.yRotation(cameraAngleRadians);
+        cameraMatrix = m4.yRotation(0);
         cameraMatrix = m4.translate(cameraMatrix, 0, 0, 0);
 
         if (cameraMovement == undefined)
@@ -212,6 +221,8 @@ function render(textureImages) {
 
         // Compute a view projection matrix
         viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+
+        viewProjectionMatrix = m4.yRotate(viewProjectionMatrix, cameraAngleRadians);
 
         viewProjectionMatrix = m4.translate(viewProjectionMatrix, px, py, pz);
 
@@ -248,6 +259,8 @@ function render(textureImages) {
             }
 
         }
+
+        angleNode.nodeValue = radToDeg(cameraAngleRadians).toFixed(0);
 
         gl.useProgram(program2);
 

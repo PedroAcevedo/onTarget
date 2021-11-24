@@ -11,12 +11,12 @@
     <link rel="stylesheet"   href="css/index.css">
 </head>
 <body>
+  <div class="container">
     <canvas id="canvas"></canvas>
-    <div id="uiContainer">
-      <div id="ui">
-        <div id="cameraAngle"></div>
-      </div>
+    <div id="overlay">
+      <div>Angle: <span id="angle"></span></div>
     </div>
+  </div>
     <!-- vertex shader -->
     <script  id="vertex-shader-3d" type="x-shader/x-vertex">
     attribute vec4 a_position;

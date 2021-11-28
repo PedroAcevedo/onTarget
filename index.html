@@ -7,6 +7,7 @@
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script src="js/m4.js" defer></script>
     <script src="js/utils.js" defer></script>
+    <script src="js/game.js" defer></script>
     <script src="js/main.js" defer></script>
     <link rel="stylesheet"   href="css/index.css">
 </head>
@@ -45,7 +46,21 @@
     void main() {
        gl_FragColor = texture2D(u_texture, v_texcoord);
     }
-    </script><!--
+    </script>
+    <script id="vertex-shader-sprite" type="x-shader/x-vertex">
+      attribute vec4 a_position;
+      attribute vec2 a_texcoord;
+      
+      uniform mat4 u_matrix;
+      uniform vec2 u_frame;
+      
+      varying vec2 v_texcoord;
+      void main(){
+        gl_Position = u_matrix * a_position;
+        v_texcoord = a_texcoord + u_frame;
+      }
+    </script>
+    <!--
     for most samples webgl-utils only provides shader compiling/linking and
     canvas resizing because why clutter the examples with code that's the same in every sample.
     See https://webglfundamentals.org/webgl/lessons/webgl-boilerplate.html

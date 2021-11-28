@@ -4,6 +4,7 @@ function main() {
     loadImages([
         "assets/Floor01.png",
         "assets/shooter.png",
+        "assets/Enemy1.png",
     ], render);
 }
 
@@ -24,7 +25,8 @@ function render(textureImages) {
 
     // setup GLSL program
     var program = webglUtils.createProgramFromScripts(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
-    var program2 = webglUtils.createProgramFromScripts(gl, ["vertex-shader-3d", "fragment-shader-3d"]);
+    var program3 = webglUtils.createProgramFromScripts(gl, ["vertex-shader-sprite", "fragment-shader-3d"]);
+    var player = new PrimitiveObject(gl, "vertex-shader-3d", "fragment-shader-3d");
 
     // look up where the vertex data needs to go.
     var positionLocation = gl.getAttribLocation(program, "a_position");
@@ -35,12 +37,13 @@ function render(textureImages) {
     var textureLocation = gl.getUniformLocation(program, "u_texture");
 
     // look up where the vertex data needs to go.
-    var positionLocation2 = gl.getAttribLocation(program2, "a_position");
-    var texLocation2 = gl.getAttribLocation(program2, "a_texcoord");
+    var positionLocation3 = gl.getAttribLocation(program3, "a_position");
+    var texLocation3 = gl.getAttribLocation(program3, "a_texcoord");
+    var frameLocation3 = gl.getUniformLocation(program3, "u_frame");
 
     // lookup uniforms
-    var matrixLocation2 = gl.getUniformLocation(program2, "u_matrix");
-    var textureLocation2 = gl.getUniformLocation(program2, "u_texture");
+    var matrixLocation3 = gl.getUniformLocation(program3, "u_matrix");
+    var textureLocation3 = gl.getUniformLocation(program3, "u_texture");
 
     // Create a buffer to put positions in
     var positionBuffer = gl.createBuffer();
@@ -56,25 +59,29 @@ function render(textureImages) {
     // Put geometry data into buffer
     setTexcoordsCube(gl);
 
+    player.setup(0);
 
     // Create a buffer to put positions in
-    var positionBuffer2 = gl.createBuffer();
+    var positionBuffer3 = gl.createBuffer();
     // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer2);
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer3);
     // Put geometry data into buffer
     //setRectangle(gl, 0, 0, textureImages[1].width, textureImages[1].height);
     setGeometryPlane(gl);
 
+    var ySize = 56 / textureImages[2].width;
+    var xSize = 60 / textureImages[2].height;
+
     // Create a buffer to put colors in
-    var texBuffer2 = gl.createBuffer();
+    var texBuffer3 = gl.createBuffer();
     // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = texBuffer)
-    gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer2);
+    gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer3);
     // Put geometry data into buffer
-    setTexcoordsPlane(gl);
+    createRectArray(gl, 0, 0, ySize, xSize);
 
     // create 2 textures
-    var textures = [];
-    for (var ii = 0; ii < 2; ++ii) {
+    textures = [];
+    for (var ii = 0; ii < 3; ++ii) {
         var texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -91,15 +98,6 @@ function render(textureImages) {
         textures.push(texture);
     }
 
-    function radToDeg(r) {
-        return r * 180 / Math.PI;
-    }
-
-
-    function degToRad(d) {
-        return d * Math.PI / 180;
-    }
-
     function mouseMove(e) {
         let x = e.offsetX;
         let y = e.offsetY;
@@ -109,7 +107,7 @@ function render(textureImages) {
         lastMousePosition = [x, y];
 
         cameraAngleRadians = degToRad(360 - (0.5 * (lastMousePosition[0])) % 360);
-        drawScene();
+        //drawScene();
     };
 
     canvas.onmousemove = function (event) { mouseMove(event); };
@@ -122,13 +120,13 @@ function render(textureImages) {
         if (keys['87'] || keys['83']) {
             const direction = keys['87'] ? 1 : -1;
             pz += cameraMovement[10] * speed * direction;
-            drawScene();
+            //drawScene();
         }
 
         if (keys['65'] || keys['68']) {
             const direction = keys['65'] ? 1 : -1;
             px += cameraMovement[10] * speed * direction;
-            drawScene();
+            //drawScene();
         }
         e.preventDefault();
     });
@@ -140,6 +138,8 @@ function render(textureImages) {
     now *= 0.001;  // seconds;
     const deltaTime = now - then;
     then = now;
+
+    drawScene();
 
     // Draw the scene.
     function drawScene() {
@@ -262,16 +262,17 @@ function render(textureImages) {
 
         angleNode.nodeValue = radToDeg(cameraAngleRadians).toFixed(0);
 
-        gl.useProgram(program2);
+        // Tell it to use our program (pair of shaders)
+        gl.useProgram(program3);
 
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, textures[1]);
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, textures[2]);
 
         // Turn on the position attribute
-        gl.enableVertexAttribArray(positionLocation2);
+        gl.enableVertexAttribArray(positionLocation3);
 
         // Bind the position buffer.
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer2);
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer3);
 
         // Tell the position attribute how to get data out of positionBuffer (ARRAY_BUFFER)
         var size = 3;          // 3 components per iteration
@@ -280,14 +281,15 @@ function render(textureImages) {
         var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
         var offset = 0;        // start at the beginning of the buffer
         gl.vertexAttribPointer(
-            positionLocation2, size, type, normalize, stride, offset);
+            positionLocation3, size, type, normalize, stride, offset);
 
         // Turn on the color attribute
-        gl.enableVertexAttribArray(texLocation2);
+        gl.enableVertexAttribArray(texLocation3);
 
         // Bind the color buffer.
-        gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer2);
+        gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer3);
 
+        //createRectArray(gl, 0, 0, ySize, xSize);
         // Tell the attribute how to get data out of texBuffer (ARRAY_BUFFER)
         var size = 2;                 // 2 components per iteration
         var type = gl.FLOAT;  // the data is 8bit unsigned values
@@ -295,23 +297,34 @@ function render(textureImages) {
         var stride = 0;               // 0 = move forward size * sizeof(type) each iteration to get the next position
         var offset = 0;               // start at the beginning of the buffer
         gl.vertexAttribPointer(
-            texLocation2, size, type, normalize, stride, offset);
+            texLocation3, size, type, normalize, stride, offset);
 
-        var matrix = m4.identity();
-        matrix = m4.translate(matrix, 0, -0.5, 1.0);
-        matrix = m4.yRotate(matrix, degToRad(180));
+
+        let frame_x = Math.floor((new Date() * 0.006) % 3) * ySize;
+        let frame_y = Math.floor((new Date() * 0.006) % 1) * xSize;
+
+        gl.uniform2f(frameLocation3, frame_x, frame_y);
+
+        var matrix = m4.translate(viewProjectionMatrix, 0, 1, 0);
+
+        //matrix = m4.yRotate(matrix, degToRad(45));
+        matrix = m4.scale(matrix, 5, 5, 5);
 
         // Set the matrix.
-        gl.uniformMatrix4fv(matrixLocation2, false, matrix);
+        gl.uniformMatrix4fv(matrixLocation3, false, matrix);
 
         // Tell the shader to use texture unit 0 for u_texture
-        gl.uniform1i(textureLocation2, 1);
+        gl.uniform1i(textureLocation3, 2);
 
         // Draw the geometry.
         var primitiveType = gl.TRIANGLES;
         var offset = 0;
         var count = 6 * 2;
         gl.drawArrays(primitiveType, offset, count);
+        
+        player.render(1, textures[1]);
+
+        requestAnimationFrame(drawScene);
     }
 }
 
@@ -333,5 +346,6 @@ var cameraMovement;
 let then = 0;
 let now = new Date().getTime();
 const keys = {};
+var textures;
 
 main();

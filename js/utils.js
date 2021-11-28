@@ -214,6 +214,20 @@ function setTexcoordsPlane(gl) {
         gl.STATIC_DRAW);
 }
 
+function createRectArray(gl, x = 0, y = 0, w = 1, h = 1) {
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([
+            x, y,
+            x + w, y,
+            x, y + h,
+            x, y + h,
+            x + w, y,
+            x + w, y + h
+        ]),
+        gl.STATIC_DRAW);
+}
+
 // Load a asset texture
 function loadImage(url, callback) {
     var image = new Image();
@@ -241,4 +255,35 @@ function loadImages(urls, callback) {
         textureImages.push(image);
     }
 
+}
+
+function currentTexture(gl, i) {
+
+    switch (i) {
+        case 0:
+            return gl.TEXTURE0;
+        case 1:
+            return gl.TEXTURE1;
+        case 2:
+            return gl.TEXTURE2;
+        default:
+            return gl.TEXTURE0;
+    }
+
+}
+
+function radToDeg(r) {
+    return r * 180 / Math.PI;
+}
+
+
+function degToRad(d) {
+    return d * Math.PI / 180;
+}
+
+class Point {
+    constructor(x = 0.0, y = 0.0) {
+        this.x = x;
+        this.y = y;
+    }
 }

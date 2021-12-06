@@ -228,6 +228,74 @@ function createRectArray(gl, x = 0, y = 0, w = 1, h = 1) {
         gl.STATIC_DRAW);
 }
 
+// Fill the buffer with the values that define a cube 'Tile'.
+function setGeometryPiramid(gl) {
+    var positions = new Float32Array([
+
+        //Bottom Face
+        0.0, 0.0, 0.0,
+        0.0, 0.0, -1.0,
+        1.0, 0.0, -1.0,
+        0.0, 0.0, 0.0,
+        1.0, 0.0, -1.0,
+        1.0, 0.0, 0.0,
+
+        //Front Face
+        0.0, 0.0, 0.0,
+        1.0, 0.0, 0.0,
+        0.5, 1.0, -0.5,
+
+        //Right Face
+        1.0, 0.0, 0.0,
+        1.0, 0.0, -1.0,
+        0.5, 1.0, -0.5,
+
+        //Back Face
+        1.0, 0.0, -1.0,
+        0.0, 0.0, -1.0,
+        0.5, 1.0, -0.5,
+
+        //Left Face
+        0.0, 0.0, -1.0,
+        0.0, 0.0, 0.0,
+        0.5, 1.0, -0.5,
+    ]);
+
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+}
+
+// Fill the buffer with texture coordinates to a Cube.
+function setTexcoordsPiramid(gl) {
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([
+            1.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+            1.0, 0.0, 0.0,
+
+            0.0, 1.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 1.0, 0.0,
+
+            1.0, 0.0, 1.0,
+            1.0, 0.0, 1.0,
+            1.0, 0.0, 1.0,
+
+            0.5, 0.0, 0.0,
+            0.5, 0.0, 0.0,
+            0.5, 0.0, 0.0,
+
+            0.0, 5.0, 0.0,
+            0.0, 5.0, 0.0,
+            0.0, 5.0, 0.0,
+
+            1.0, 1.0, 0.0,
+            1.0, 1.0, 0.0,
+            1.0, 1.0, 0.0,]),
+        gl.STATIC_DRAW);
+}
+
+
 // Load a asset texture
 function loadImage(url, callback) {
     var image = new Image();
@@ -266,6 +334,8 @@ function currentTexture(gl, i) {
             return gl.TEXTURE1;
         case 2:
             return gl.TEXTURE2;
+        case 3:
+            return gl.TEXTURE3;
         default:
             return gl.TEXTURE0;
     }

@@ -371,10 +371,10 @@ class Enemy {
 
         gl.uniform2f(this.frameLoc, frame_x, frame_y);
 
-        var matrix = m4.translate(viewProjectionMatrix, 0, 0, 8);
+        var matrix = m4.translate(viewProjectionMatrix, 0, -0.2, 25);
 
         //matrix = m4.yRotate(matrix, degToRad(45));
-        matrix = m4.scale(matrix, 1, 1, 1);
+        matrix = m4.scale(matrix, 5, 5, 5);
 
         // Set the matrix.
         gl.uniformMatrix4fv(this.matrixLoc, false, matrix);

@@ -5,7 +5,7 @@ function main() {
         "assets/Floor01.png",
         "assets/shooter.png",
         "assets/Enemy1.png",
-        "assets/red.jpg",
+        "assets/shoot-fire.png",
     ], render);
 }
 
@@ -74,7 +74,7 @@ function render(textureImages) {
     canvas.onclick = function (event) { shoot(event); };
 
     var cameraAngleRadians = degToRad(0.5 * lastMouseDelta[0]);
-    var fieldOfViewRadians = degToRad(60);
+    var fieldOfViewRadians = degToRad(30);
 
     window.addEventListener('keydown', (e) => {
         keys[e.keyCode] = true;

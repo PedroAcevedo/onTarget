@@ -357,3 +357,8 @@ class Point {
         this.y = y;
     }
 }
+
+function playSound(pathToFile) {
+    var audio = new Audio(pathToFile);
+    audio.play();
+}

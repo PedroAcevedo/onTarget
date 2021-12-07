@@ -68,6 +68,12 @@ function render(textureImages) {
         var bullet = new Bullet(gl, "vertex-shader-3d", "fragment-shader-3d");
         bullet.setup(px, py, pz);
         shoots.push(bullet);
+        try {
+            playSound("assets/sound/M1-Garand-single.mp3");
+        } catch (error) {
+            console.log(error)
+        }
+        
     }
 
     canvas.onmousemove = function (event) { mouseMove(event); };

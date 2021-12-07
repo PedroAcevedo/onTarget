@@ -191,8 +191,12 @@ function render(textureImages) {
 
         shoots.forEach(bullet => {
             bullet.render(3, textures[3], cameraAngleRadians);
-            console.log("Hello bullte");
+            //console.log("Hello bullte:" + Object.entries(bullet));
         });
+        if(shoots.length > 0 && ( Math.abs( shoots[0].initialPositionZ) > bulletMaxDrawDistance 
+            || Math.abs(shoots[0].initialPositionX) > bulletMaxDrawDistance) ){
+            shoots.splice(0,1);
+        }
 
         angleNode.nodeValue = radToDeg(cameraAngleRadians).toFixed(0);
 
@@ -229,5 +233,6 @@ let now = new Date().getTime();
 const keys = {};
 var textures;
 var shoots = [];
+let bulletMaxDrawDistance = 60;
 
 main();

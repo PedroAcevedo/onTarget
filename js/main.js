@@ -123,6 +123,7 @@ function render(textureImages) {
         if (!isPlaying && keys['77']){
             isPlaying = true;
             backgroundMusic[currentTrackSelected].play();
+            console.log("playing: " + tracks[currentTrackSelected]);
         }else if(keys['77']){
             isPlaying = false;
             backgroundMusic[currentTrackSelected].pause();
@@ -133,6 +134,16 @@ function render(textureImages) {
             backgroundMusic[currentTrackSelected].currentTime = 0.0;
             currentTrackSelected = ( currentTrackSelected + 1 ) % tracks.length;
             backgroundMusic[currentTrackSelected].play();
+            console.log("playing: " + tracks[currentTrackSelected]);
+        }
+        // show/hide controls
+        if (keys['72']){
+            var x = document.getElementById('controls');
+            if (x.style.display === 'none') {
+                x.style.display = 'block';
+            } else {
+                x.style.display = 'none';
+            }
         }
 
         e.preventDefault();
@@ -261,9 +272,9 @@ var backgroundMusic;
 let isPlaying = false;
 var tracks = [
     "Doom OST E1M3 Dark Halls", 
+    "Everyone_is_so_alive",
     "Doom OST E1M5 Suspense", 
-    "Everyone_is_so_alive", 
-    "JUJUTSU KAISEN Opening Kaikai Kitan"]
+    "Big_Crumble"]
 var currentTrackSelected = Math.floor(Math.random()*tracks.length);
 
 main();

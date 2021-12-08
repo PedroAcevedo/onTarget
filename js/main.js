@@ -2,8 +2,12 @@
 
 function main() {
     // load before rendering
-    backgroundMusic = new Audio("assets/sound/background/"+getRandom(tracks)+".mp3");
-    backgroundMusic.loop = true;
+    backgroundMusic = tracks.map((e) => {
+        return new Audio("assets/sound/background/"+e+".mp3");
+    });
+    backgroundMusic.forEach((track)=>{
+        track.loop = true;
+    });
     
     loadImages([
         "assets/Floor01.png",
@@ -115,13 +119,22 @@ function render(textureImages) {
 
             //drawScene();
         }
+        // music
         if (!isPlaying && keys['77']){
             isPlaying = true;
-            backgroundMusic.play();
+            backgroundMusic[currentTrackSelected].play();
         }else if(keys['77']){
             isPlaying = false;
-            backgroundMusic.pause();
+            backgroundMusic[currentTrackSelected].pause();
         }
+        // next track
+        if (isPlaying && keys['78']){
+            backgroundMusic[currentTrackSelected].pause();
+            backgroundMusic[currentTrackSelected].currentTime = 0.0;
+            currentTrackSelected = ( currentTrackSelected + 1 ) % tracks.length;
+            backgroundMusic[currentTrackSelected].play();
+        }
+
         e.preventDefault();
     });
     window.addEventListener('keyup', (e) => {
@@ -251,5 +264,6 @@ var tracks = [
     "Doom OST E1M5 Suspense", 
     "Everyone_is_so_alive", 
     "JUJUTSU KAISEN Opening Kaikai Kitan"]
+var currentTrackSelected = Math.floor(Math.random()*tracks.length);
 
 main();

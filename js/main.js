@@ -1,6 +1,10 @@
 "use strict";
 
 function main() {
+    // load before rendering
+    backgroundMusic = new Audio("assets/sound/background/"+getRandom(tracks)+".mp3");
+    backgroundMusic.loop = true;
+    
     loadImages([
         "assets/Floor01.png",
         "assets/shooter.png",
@@ -18,7 +22,6 @@ function render(textureImages) {
     if (!gl) {
         return;
     }
-
     var angleNode = document.createTextNode("");
 
     // Add those text nodes where they need to go
@@ -111,6 +114,13 @@ function render(textureImages) {
             }
 
             //drawScene();
+        }
+        if (!isPlaying && keys['77']){
+            isPlaying = true;
+            backgroundMusic.play();
+        }else if(keys['77']){
+            isPlaying = false;
+            backgroundMusic.pause();
         }
         e.preventDefault();
     });
@@ -234,5 +244,12 @@ const keys = {};
 var textures;
 var shoots = [];
 let bulletMaxDrawDistance = 60;
+var backgroundMusic;
+let isPlaying = false;
+var tracks = [
+    "Doom OST E1M3 Dark Halls", 
+    "Doom OST E1M5 Suspense", 
+    "Everyone_is_so_alive", 
+    "JUJUTSU KAISEN Opening Kaikai Kitan"]
 
 main();

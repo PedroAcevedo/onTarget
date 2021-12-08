@@ -362,3 +362,7 @@ function playSound(pathToFile) {
     var audio = new Audio(pathToFile);
     audio.play();
 }
+
+function getRandom(items){
+    return items[Math.floor(Math.random()*items.length)];
+}

@@ -95,10 +95,10 @@ function render(textureImages) {
         let angle = radToDeg(cameraAngleRadians).toFixed(0);
 
         if (keys['87'] || keys['83']) {
-            let direction = keys['83'] ? -1 : 1;
+            let direction = keys['83'] ? 1 : -1;
 
-            px += Math.sin(angle*Math.PI/180) *  speed * direction;
-            pz += Math.cos(angle*Math.PI/180) *  speed * direction;
+            px += Math.cos((angle/90 - 1)*Math.PI/2) *  speed * direction;
+            pz += Math.sin((angle/90 - 1)*Math.PI/2) *  speed * direction;
 
             //drawScene();
         }

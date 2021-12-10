@@ -336,6 +336,10 @@ function currentTexture(gl, i) {
             return gl.TEXTURE2;
         case 3:
             return gl.TEXTURE3;
+        case 4:
+            return gl.TEXTURE4;
+        case 5:
+            return gl.TEXTURE5;
         default:
             return gl.TEXTURE0;
     }
@@ -363,6 +367,6 @@ function playSound(pathToFile) {
     audio.play();
 }
 
-function getRandom(items){
-    return items[Math.floor(Math.random()*items.length)];
+function getRandom(items) {
+    return items[Math.floor(Math.random() * items.length)];
 }

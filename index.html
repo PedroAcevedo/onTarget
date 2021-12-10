@@ -55,6 +55,25 @@
        gl_FragColor = texture2D(u_texture, v_texcoord);
     }
     </script>
+    <script  id="fragment-shader-enemy" type="x-shader/x-fragment">
+      precision mediump float;
+      
+      varying vec2 v_texcoord;
+      
+      uniform sampler2D u_texture;
+      uniform bool u_damage;
+
+      vec4 Color = vec4(1.000,0.0,0.0, 1.0);
+
+      void main() {
+         gl_FragColor = texture2D(u_texture, v_texcoord);
+
+         if(u_damage) {
+           gl_FragColor = gl_FragColor * Color;
+         }
+
+      }
+      </script>
     <script id="vertex-shader-sprite" type="x-shader/x-vertex">
       attribute vec4 a_position;
       attribute vec2 a_texcoord;

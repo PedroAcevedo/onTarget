@@ -3,17 +3,18 @@
 function main() {
     // load before rendering
     backgroundMusic = tracks.map((e) => {
-        return new Audio("assets/sound/background/"+e+".mp3");
+        return new Audio("assets/sound/background/" + e + ".mp3");
     });
-    backgroundMusic.forEach((track)=>{
+    backgroundMusic.forEach((track) => {
         track.loop = true;
     });
-    
+
     loadImages([
         "assets/Floor01.png",
         "assets/shooter.png",
         "assets/Enemy1.png",
         "assets/shoot-fire.png",
+        "assets/wall.png",
     ], render);
 }
 
@@ -31,9 +32,9 @@ function render(textureImages) {
     // Add those text nodes where they need to go
     angleElement.appendChild(angleNode);
 
-    // create 4 textures
+    // create n textures
     textures = [];
-    for (var ii = 0; ii < 4; ++ii) {
+    for (var ii = 0; ii < numberOfTextures; ++ii) {
         var texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -53,12 +54,14 @@ function render(textureImages) {
 
     // setup GLSL program
     var floor = new PrimitiveObject(gl, "vertex-shader-3d", "fragment-shader-3d");
+    var wall = new PrimitiveObject(gl, "vertex-shader-3d", "fragment-shader-3d");
     var player = new PrimitiveObject(gl, "vertex-shader-3d", "fragment-shader-3d");
-    var enemy01 = new Enemy(gl, "vertex-shader-sprite", "fragment-shader-3d", textures[2], textureImages[2], 56, 60);
+    var enemy01 = new Enemy(gl, "vertex-shader-sprite", "fragment-shader-enemy", textures[2], textureImages[2], 56, 60);
 
     floor.setup(1);
+    wall.setup(1);
     player.setup(0);
-    enemy01.setup();
+    enemy01.setup(0, 12);
 
     function mouseMove(e) {
         let x = e.offsetX;
@@ -80,7 +83,7 @@ function render(textureImages) {
         } catch (error) {
             console.log(error)
         }
-        
+
     }
 
     canvas.onmousemove = function (event) { mouseMove(event); };
@@ -97,8 +100,8 @@ function render(textureImages) {
         if (keys['87'] || keys['83']) {
             let direction = keys['83'] ? 1 : -1;
 
-            px += Math.cos((angle/90 - 1)*Math.PI/2) *  speed * direction;
-            pz += Math.sin((angle/90 - 1)*Math.PI/2) *  speed * direction;
+            px += Math.cos((angle / 90 - 1) * Math.PI / 2) * speed * direction;
+            pz += Math.sin((angle / 90 - 1) * Math.PI / 2) * speed * direction;
 
             //drawScene();
         }
@@ -106,29 +109,29 @@ function render(textureImages) {
         if (keys['65'] || keys['68']) {
             let direction = keys['68'] ? -1 : 1;
 
-            px += Math.cos(angle*Math.PI/180) *  speed * direction;
-            pz += Math.sin(angle*Math.PI/180) *  speed * direction;
+            px += Math.cos(angle * Math.PI / 180) * speed * direction;
+            pz += Math.sin(angle * Math.PI / 180) * speed * direction;
             //drawScene();
         }
         // music
-        if (!isPlaying && keys['77']){
+        if (!isPlaying && keys['77']) {
             isPlaying = true;
             backgroundMusic[currentTrackSelected].play();
             console.log("playing: " + tracks[currentTrackSelected]);
-        }else if(keys['77']){
+        } else if (keys['77']) {
             isPlaying = false;
             backgroundMusic[currentTrackSelected].pause();
         }
         // next track
-        if (isPlaying && keys['78']){
+        if (isPlaying && keys['78']) {
             backgroundMusic[currentTrackSelected].pause();
             backgroundMusic[currentTrackSelected].currentTime = 0.0;
-            currentTrackSelected = ( currentTrackSelected + 1 ) % tracks.length;
+            currentTrackSelected = (currentTrackSelected + 1) % tracks.length;
             backgroundMusic[currentTrackSelected].play();
             console.log("playing: " + tracks[currentTrackSelected]);
         }
         // show/hide controls
-        if (keys['72']){
+        if (keys['72']) {
             var x = document.getElementById('controls');
             if (x.style.display === 'none') {
                 x.style.display = 'block';
@@ -145,6 +148,11 @@ function render(textureImages) {
     });
 
     drawScene();
+
+    walls.push(new CollideBox(-50, -55, 50, -50));
+    walls.push(new CollideBox(-50, 50, 50, 55));
+    walls.push(new CollideBox(-55, -50, -50, 50));
+    walls.push(new CollideBox(50, -50, 55, 50));
 
     // Draw the scene.
     function drawScene() {
@@ -210,22 +218,82 @@ function render(textureImages) {
 
                 floor.render(0, textures[0], matrix, 6 * 6);
 
+
             }
 
         }
 
+        //Walls
+        let xzLimits = [-55, 50]
+
+        for (var ii = 0; ii < 4; ++ii) {
+
+            for (var jj = 0; jj < 20; ++jj) {
+
+                var around = -50 + jj * 5;
+
+                var z = 0;
+                var x = 0;
+
+                if (ii > 1) {
+
+                    z = around;
+                    x = xzLimits[ii - 2];
+
+                } else {
+
+                    x = around;
+                    z = xzLimits[ii];
+                }
+
+                for (var kk = 0; kk < 5; ++kk) {
+
+                    var y = -5 + kk * 5;
+
+                    var matrix = m4.translate(viewProjectionMatrix, x, y, z);
+
+                    //matrix = m4.yRotate(matrix, degToRad(45));
+                    matrix = m4.scale(matrix, 5, 5, 5);
+
+                    wall.render(4, textures[4], matrix, 6 * 6);
+
+
+                }
+
+            }
+
+        }
+
+
         shoots.forEach(bullet => {
-            bullet.render(3, textures[3], cameraAngleRadians);
+            if (bullet.enabled) {
+                bullet.render(3, textures[3], cameraAngleRadians);
+
+                if (enemy01.health > 0) {
+                    bullet.collide(enemy01);
+                }
+
+                for (let w = 0; w < walls.length; ++w) {
+                    if (bullet.collide(walls[w])) break;
+                }
+
+            }
+
+
             //console.log("Hello bullte:" + Object.entries(bullet));
         });
-        if(shoots.length > 0 && ( Math.abs( shoots[0].initialPositionZ) > bulletMaxDrawDistance 
-            || Math.abs(shoots[0].initialPositionX) > bulletMaxDrawDistance) ){
-            shoots.splice(0,1);
+        if (shoots.length > 0 && (Math.abs(shoots[0].initialPositionZ) > bulletMaxDrawDistance
+            || Math.abs(shoots[0].initialPositionX) > bulletMaxDrawDistance)) {
+            shoots.splice(0, 1);
         }
 
         angleNode.nodeValue = radToDeg(cameraAngleRadians).toFixed(0);
 
-        enemy01.render(2);
+        if (enemy01.health > 0) {
+            enemy01.render(2);
+        }
+
+
 
         var matrix = m4.identity();
         matrix = m4.translate(matrix, 0.0, -0.5, 0.0);
@@ -262,10 +330,11 @@ let bulletMaxDrawDistance = 60;
 var backgroundMusic;
 let isPlaying = false;
 var tracks = [
-    "Doom OST E1M3 Dark Halls", 
+    "Doom OST E1M3 Dark Halls",
     "Everyone_is_so_alive",
-    "Doom OST E1M5 Suspense", 
+    "Doom OST E1M5 Suspense",
     "Big_Crumble"]
-var currentTrackSelected = Math.floor(Math.random()*tracks.length);
-
+var currentTrackSelected = Math.floor(Math.random() * tracks.length);
+var numberOfTextures = 5;
+var walls = [];
 main();

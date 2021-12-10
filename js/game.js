@@ -109,6 +109,7 @@ class PrimitiveObject {
 
     }
 
+
 }
 
 class Bullet {
@@ -120,6 +121,7 @@ class Bullet {
         this.initialPositionX = 0;
         this.initialAngle = -1;
         this.bulletAngle = 0;
+        this.enabled = true;
     }
 
     setup(px, py, pz) {
@@ -145,6 +147,8 @@ class Bullet {
         setGeometryCube(gl);
 
         this.positionMatrix = [px, py, pz];
+
+        this.collisionCircle = new SphereCollider(-this.positionMatrix[0], -this.positionMatrix[1] - 0.3, -this.positionMatrix[2], 0.3);
 
         gl.useProgram(null);
 
@@ -274,10 +278,30 @@ class Bullet {
         gl.drawArrays(primitiveType, offset, count);
         gl.useProgram(null);
 
+        this.collisionCircle.update(this.initialPositionX, this.initialPositionZ);
+
+    }
+
+    collideSound() {
+        this.enabled = false;
+
+        try {
+            playSound("assets/sound/bullet-collision-sound.mp3");
+        } catch (error) {
+            console.log(error)
+        }
     }
 
 
+    collide(collideObject) {
 
+        if (this.collisionCircle.circleVsObject(collideObject)) {
+            this.collideSound();
+            return true;
+        }
+
+        return false;
+    }
 }
 
 class Enemy {
@@ -287,13 +311,11 @@ class Enemy {
         this.texture = texture;
         this.ux = width / textureImage.width;
         this.uy = height / textureImage.height;
-
-        console.log(this.texture.width);
-        console.log(this.texture.height);
-
+        this.health = 5;
+        this.damage = 0;
     }
 
-    setup() {
+    setup(px, pz) {
 
         let gl = this.gl;
 
@@ -307,6 +329,7 @@ class Enemy {
         // lookup uniforms
         this.matrixLoc = gl.getUniformLocation(this.program, "u_matrix");
         this.textureLoc = gl.getUniformLocation(this.program, "u_texture");
+        this.damageLoc = gl.getUniformLocation(this.program, "u_damage");
 
         // Create a buffer to put positions in
         this.positionBuffer = gl.createBuffer();
@@ -324,11 +347,14 @@ class Enemy {
 
         gl.useProgram(null);
 
+        this.position = [px, -0.2, pz];
+
+        this.boundingBox = new CollideBox(px - 1, pz - 1, px + 1, pz + 1);
     }
 
     render(tex) {
         let gl = this.gl;
-
+        
         gl.useProgram(this.program);
 
         gl.activeTexture(currentTexture(gl, tex));
@@ -370,8 +396,9 @@ class Enemy {
         let frame_y = Math.floor((new Date() * 0.006) % 1) * this.uy;
 
         gl.uniform2f(this.frameLoc, frame_x, frame_y);
+        gl.uniform1f(this.damageLoc, this.damage);
 
-        var matrix = m4.translate(viewProjectionMatrix, 0, -0.2, 25);
+        var matrix = m4.translate(viewProjectionMatrix, this.position[0], this.position[1], this.position[2]);
 
         //matrix = m4.yRotate(matrix, degToRad(45));
         matrix = m4.scale(matrix, 5, 5, 5);
@@ -391,4 +418,79 @@ class Enemy {
         gl.useProgram(null);
 
     }
+
+    isColliding(x, z){
+      
+      if(this.boundingBox.isColliding(x, z)){
+
+        this.damage = 1;
+        this.health -= 1;
+
+        setTimeout(() => this.damage = 0, 200);
+
+        if(this.health == 0){
+            console.log("I died");
+        }
+
+        return true;
+      }
+      
+      return false;
+    }
+}
+
+class SphereCollider {
+
+    constructor(x, y, z, r) {
+
+        this.center = new Coordinate(x, y, z);
+        this.initialPositionX = x;
+        this.initialPositionZ = z;
+        this.radius = r;
+    }
+
+    update(x, z) {
+        this.center.x = this.initialPositionX + x;
+        this.center.z = this.initialPositionZ + z;
+    }
+
+    circleVsObject(collideObject) {
+
+        if (collideObject.isColliding(this.center.x - this.radius, this.center.z - this.radius)) {
+            return true;
+        }         
+    
+        return false;
+    }
+
+}
+
+class Coordinate {
+
+    constructor(x, y, z) {
+
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+}
+
+class CollideBox {
+
+    constructor(x1, z1, x2, z2) {
+
+        this.xMin = x1;
+        this.zMin = z1;
+        this.xMax = x2;
+        this.zMax = z2;
+    }
+
+    isColliding(x, z){
+        if(x >= this.xMin && x <= this.xMax && z >= this.zMin && z <= this.zMax){
+            return true
+        }
+        return false;
+    }
+
 }

@@ -296,6 +296,9 @@ function render(textureImages) {
 
         if (enemy01.health > 0) {
             enemy01.render(2);
+        }else if (!enemyDied){
+            playSound("assets/sound/death sound.mp3");
+            enemyDied = true;
         }
 
 
@@ -348,5 +351,6 @@ var soundsWeapons = [
 var currentGunSelected = 0;
 var numberOfTextures = 7;
 var walls = [];
+var enemyDied = false;
 
 main();

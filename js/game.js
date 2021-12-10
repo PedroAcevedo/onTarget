@@ -263,7 +263,7 @@ class Bullet {
         matrix = m4.translate(matrix, this.initialPositionX, 0, this.initialPositionZ);
         //matrix = m4.yRotate(matrix, this.initialAngle);
         //matrix = m4.xRotate(matrix, degToRad(-90));
-        matrix = m4.scale(matrix, 0.3, 0.3, 0.3);
+        matrix = m4.scale(matrix, 0.1, 0.1, 0.1);
 
         // Set the matrix.
         gl.uniformMatrix4fv(this.matrixLoc, false, matrix);

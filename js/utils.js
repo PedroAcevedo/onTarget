@@ -340,6 +340,8 @@ function currentTexture(gl, i) {
             return gl.TEXTURE4;
         case 5:
             return gl.TEXTURE5;
+        case 6:
+            return gl.TEXTURE6;
         default:
             return gl.TEXTURE0;
     }

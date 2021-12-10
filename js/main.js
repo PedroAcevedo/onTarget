@@ -3,10 +3,9 @@
 function main() {
     // load before rendering
     backgroundMusic = tracks.map((e) => {
-        return new Audio("assets/sound/background/" + e + ".mp3");
-    });
-    backgroundMusic.forEach((track) => {
+        var track = new Audio("assets/sound/background/"+e+".mp3");
         track.loop = true;
+        return track;
     });
 
     loadImages([
@@ -14,6 +13,8 @@ function main() {
         "assets/shooter.png",
         "assets/Enemy1.png",
         "assets/shoot-fire.png",
+        "assets/otherGun.png",
+        "assets/otherGun1.png",
         "assets/wall.png",
     ], render);
 }
@@ -79,7 +80,7 @@ function render(textureImages) {
         bullet.setup(px, py, pz);
         shoots.push(bullet);
         try {
-            playSound("assets/sound/M1-Garand-single.mp3");
+            playSound("assets/sound/guns/"+soundsWeapons[currentGunSelected]+".mp3");
         } catch (error) {
             console.log(error)
         }
@@ -138,6 +139,10 @@ function render(textureImages) {
             } else {
                 x.style.display = 'none';
             }
+        }
+        // change weapon
+        if (keys['49'] || keys['50'] || keys['51']){
+            currentGunSelected = e.key -1;
         }
 
         e.preventDefault();
@@ -255,7 +260,7 @@ function render(textureImages) {
                     //matrix = m4.yRotate(matrix, degToRad(45));
                     matrix = m4.scale(matrix, 5, 5, 5);
 
-                    wall.render(4, textures[4], matrix, 6 * 6);
+                    wall.render(6, textures[6], matrix, 6 * 6);
 
 
                 }
@@ -299,7 +304,7 @@ function render(textureImages) {
         matrix = m4.translate(matrix, 0.0, -0.5, 0.0);
         matrix = m4.yRotate(matrix, degToRad(180));
 
-        player.render(1, textures[1], matrix, 6 * 2);
+        player.render(1, textures[[1,4,5][currentGunSelected]], matrix, 6 * 2);
 
         requestAnimationFrame(drawScene);
     }
@@ -334,7 +339,14 @@ var tracks = [
     "Everyone_is_so_alive",
     "Doom OST E1M5 Suspense",
     "Big_Crumble"]
-var currentTrackSelected = Math.floor(Math.random() * tracks.length);
-var numberOfTextures = 5;
+var currentTrackSelected = Math.floor(Math.random()*tracks.length);
+var soundsWeapons = [
+    "M1-Garand-single",
+    "M4A1-Single",
+    "normal-shotgun-single"
+]
+var currentGunSelected = 0;
+var numberOfTextures = 7;
 var walls = [];
+
 main();

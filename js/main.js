@@ -3,7 +3,7 @@
 function main() {
     // load before rendering
     backgroundMusic = tracks.map((e) => {
-        var track = new Audio("assets/sound/background/"+e+".mp3");
+        var track = new Audio("assets/sound/background/" + e + ".mp3");
         track.loop = true;
         return track;
     });
@@ -58,12 +58,12 @@ function render(textureImages) {
     var floor = new PrimitiveObject(gl, "vertex-shader-3d", "fragment-shader-3d");
     var wall = new PrimitiveObject(gl, "vertex-shader-3d", "fragment-shader-3d");
     var player = new PrimitiveObject(gl, "vertex-shader-3d", "fragment-shader-3d");
-    var enemy01 = new Enemy(gl, "vertex-shader-sprite", "fragment-shader-enemy", textures[2], textureImages[2], 56, 60);
 
     floor.setup(1);
     wall.setup(1);
     player.setup(0);
-    enemy01.setup(0, 12);
+
+    addEnemies(gl, textureImages, 5);
 
     function mouseMove(e) {
         let x = e.offsetX;
@@ -81,7 +81,7 @@ function render(textureImages) {
         bullet.setup(px, py, pz);
         shoots.push(bullet);
         try {
-            playSound("assets/sound/guns/"+soundsWeapons[currentGunSelected]+".mp3");
+            playSound("assets/sound/guns/" + soundsWeapons[currentGunSelected] + ".mp3");
         } catch (error) {
             console.log(error)
         }
@@ -102,8 +102,9 @@ function render(textureImages) {
         if (keys['87'] || keys['83']) {
             let direction = keys['83'] ? 1 : -1;
 
-            px += Math.cos((angle / 90 - 1) * Math.PI / 2) * speed * direction;
-            pz += Math.sin((angle / 90 - 1) * Math.PI / 2) * speed * direction;
+            let tempx = px + Math.cos((angle / 90 - 1) * Math.PI / 2) * speed * direction;
+            let tempz = pz + Math.sin((angle / 90 - 1) * Math.PI / 2) * speed * direction;
+            playerCollisionBox(tempx, tempz);
 
             //drawScene();
         }
@@ -111,8 +112,9 @@ function render(textureImages) {
         if (keys['65'] || keys['68']) {
             let direction = keys['68'] ? -1 : 1;
 
-            px += Math.cos(angle * Math.PI / 180) * speed * direction;
-            pz += Math.sin(angle * Math.PI / 180) * speed * direction;
+            let tempx = px + Math.cos(angle * Math.PI / 180) * speed * direction;
+            let tempz = pz + Math.sin(angle * Math.PI / 180) * speed * direction;
+            playerCollisionBox(tempx, tempz);
             //drawScene();
         }
         // music
@@ -142,8 +144,8 @@ function render(textureImages) {
             }
         }
         // change weapon
-        if (keys['49'] || keys['50'] || keys['51']){
-            currentGunSelected = e.key -1;
+        if (keys['49'] || keys['50'] || keys['51']) {
+            currentGunSelected = e.key - 1;
         }
 
         e.preventDefault();
@@ -275,9 +277,11 @@ function render(textureImages) {
             if (bullet.enabled) {
                 bullet.render(3, textures[3], cameraAngleRadians);
 
-                if (enemy01.health > 0) {
-                    bullet.collide(enemy01);
-                }
+                enemies.forEach((enemy) => {
+                    if (enemy.health > 0) {
+                        bullet.collide(enemy);
+                    }
+                });
 
                 for (let w = 0; w < walls.length; ++w) {
                     if (bullet.collide(walls[w])) break;
@@ -295,22 +299,53 @@ function render(textureImages) {
 
         angleNode.nodeValue = radToDeg(cameraAngleRadians).toFixed(0);
 
-        if (enemy01.health > 0) {
-            enemy01.render(2);
-        }else if (!enemyDied){
-            enemyDyingSound.play();
-            enemyDied = true;
-        }
 
+        enemies.forEach((enemy) => {
+            if (enemy.health > 0) {
+                enemy.render(2);
+            }
+        });
 
 
         var matrix = m4.identity();
         matrix = m4.translate(matrix, 0.0, -0.5, 0.0);
         matrix = m4.yRotate(matrix, degToRad(180));
 
-        player.render(1, textures[[1,4,5][currentGunSelected]], matrix, 6 * 2);
+        player.render(1, textures[[1, 4, 5][currentGunSelected]], matrix, 6 * 2);
 
         requestAnimationFrame(drawScene);
+    }
+}
+
+function playerCollisionBox(tempx, tempz) {
+
+    let isColliding = false;
+    playerBox.update(tempx - 3, tempz - 4, tempx + 2, tempz + 4);
+
+    for (let w = 0; w < walls.length; ++w) {
+        if (playerBox.objectVsObject(walls[w])) {
+            console.log("Collide player");
+            isColliding = true;
+            break;
+        }
+    }
+
+    if (!isColliding) {
+        px = tempx;
+        pz = tempz;
+    } else {
+        playerBox.update(px - 2, pz - 2, px + 2, pz + 2);
+    }
+}
+
+function addEnemies(gl, textureImages, enemiesNumber) {
+    for (var ii = 0; ii < enemiesNumber; ++ii) {
+        let angle = ii * Math.PI * 2 / enemiesNumber;
+        let x = Math.cos(angle) * 8;
+        let z = 25 + Math.sin(angle) * 8;
+        let enemy = new Enemy(gl, "vertex-shader-sprite", "fragment-shader-enemy", textures[2], textureImages[2], 56, 60);
+        enemy.setup(x, z);
+        enemies.push(enemy);
     }
 }
 
@@ -343,7 +378,7 @@ var tracks = [
     "Everyone_is_so_alive",
     "Doom OST E1M5 Suspense",
     "Big_Crumble"]
-var currentTrackSelected = Math.floor(Math.random()*tracks.length);
+var currentTrackSelected = Math.floor(Math.random() * tracks.length);
 var soundsWeapons = [
     "M1-Garand-single",
     "M4A1-Single",
@@ -354,5 +389,7 @@ var numberOfTextures = 7;
 var walls = [];
 var enemyDied = false;
 var enemyDyingSound;
+var playerBox = new CollideBox(0, 0, 2, 2);
+var enemies = [];
 
 main();

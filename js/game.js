@@ -354,7 +354,7 @@ class Enemy {
 
     render(tex) {
         let gl = this.gl;
-        
+
         gl.useProgram(this.program);
 
         gl.activeTexture(currentTexture(gl, tex));
@@ -419,23 +419,24 @@ class Enemy {
 
     }
 
-    isColliding(x, z){
-      
-      if(this.boundingBox.isColliding(x, z)){
+    isColliding(x, z) {
 
-        this.damage = 1;
-        this.health -= 1;
+        if (this.boundingBox.isColliding(x, z)) {
 
-        setTimeout(() => this.damage = 0, 200);
+            this.damage = 1;
+            this.health -= 1;
 
-        if(this.health == 0){
-            console.log("I died");
+            setTimeout(() => this.damage = 0, 200);
+
+            if (this.health == 0) {
+                console.log("I died");
+                enemyDyingSound.play();
+            }
+
+            return true;
         }
 
-        return true;
-      }
-      
-      return false;
+        return false;
     }
 }
 
@@ -458,8 +459,8 @@ class SphereCollider {
 
         if (collideObject.isColliding(this.center.x - this.radius, this.center.z - this.radius)) {
             return true;
-        }         
-    
+        }
+
         return false;
     }
 
@@ -486,9 +487,24 @@ class CollideBox {
         this.zMax = z2;
     }
 
-    isColliding(x, z){
-        if(x >= this.xMin && x <= this.xMax && z >= this.zMin && z <= this.zMax){
+    isColliding(x, z) {
+        if (x >= this.xMin && x <= this.xMax && z >= this.zMin && z <= this.zMax) {
             return true
+        }
+        return false;
+    }
+
+    update(x1, z1, x2, z2) {
+
+        this.xMin = x1;
+        this.zMin = z1;
+        this.xMax = x2;
+        this.zMax = z2;
+    }
+
+    objectVsObject(colliderObject){
+        if(colliderObject.isColliding(this.xMin, this.zMin) || colliderObject.isColliding(this.xMax, this.zMax)){
+            return true;
         }
         return false;
     }

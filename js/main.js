@@ -7,6 +7,7 @@ function main() {
         track.loop = true;
         return track;
     });
+    enemyDyingSound = new Audio("assets/sound/death sound.mp3");
 
     loadImages([
         "assets/Floor01.png",
@@ -297,7 +298,7 @@ function render(textureImages) {
         if (enemy01.health > 0) {
             enemy01.render(2);
         }else if (!enemyDied){
-            playSound("assets/sound/death sound.mp3");
+            enemyDyingSound.play();
             enemyDied = true;
         }
 
@@ -352,5 +353,6 @@ var currentGunSelected = 0;
 var numberOfTextures = 7;
 var walls = [];
 var enemyDied = false;
+var enemyDyingSound;
 
 main();
